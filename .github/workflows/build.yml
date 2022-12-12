@@ -1,0 +1,43 @@
+name: C/C++ CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: ubuntu-18.04
+    runs-on: ubuntu-18.04
+    container: devkitpro/devkitppc:latest
+ 
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+
+
+    - name: install cmake
+      run: |
+        apt-get install -y cmake
+
+    - name: Build
+      run: |
+        make -j2
+        make install
+
+    - name: Build Test
+      run: |
+        cd tests
+        mkdir build && cd build
+        /opt/devkitpro/portlibs/wiiu/bin/powerpc-eabi-cmake ../
+        make -j2
+
+    - name: Build Samples (Make)
+      run: |
+        cd samples/make
+        make -j2
+
+    - name: Build Samples (CMake)
+      run: |
+        cd samples/cmake
+        mkdir build && cd build
+        /opt/devkitpro/portlibs/wiiu/bin/powerpc-eabi-cmake ../
+        make -j2
