@@ -1,4 +1,4 @@
-name: Sonic Nexus 3DS Build
+name: Nexus3DS
 
 on: workflow_dispatch
 
@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  Sonic Nexus 3DS Build:
+  Nexus3DS:
     runs-on: ubuntu-latest
     container:
       image: devkitpro/devkitarm:latest
