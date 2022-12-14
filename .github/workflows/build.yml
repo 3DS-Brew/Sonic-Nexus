@@ -1,46 +1,46 @@
-name: Build Sonic Nexus for multiple platforms
+name: Build (Nintendo 3DS)
 
-on:
-  push:
-    branches:
-      - master
-      - continuous-delivery
+on: [push, pull_request]
 
-jobs: 
-  3ds test:
-    runs-on: windows-latest
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  n3ds:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1
-      - name: Download libogg, libvorbis, and libtheora for easier includes
-        run : |
-          Invoke-WebRequest -Uri "https://downloads.xiph.org/releases/ogg/libogg-1.3.4.zip" -OutFile "libogg.zip"
-          Expand-Archive -Path libogg.zip -DestinationPath ./dependencies/windows/
-          Rename-Item ./dependencies/windows/libogg-1.3.4 libogg
-          Invoke-WebRequest -Uri "https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.zip" -OutFile "libvorbis.zip"
-          Expand-Archive -Path libvorbis.zip -DestinationPath ./dependencies/windows/
-          Rename-Item ./dependencies/windows/libvorbis-1.3.7 libvorbis
-      - name: Download SDL2
+      - uses: actions/checkout@v3
+      - name: Install build requirements
         run: |
-          Invoke-WebRequest -Uri "https://libsdl.org/release/SDL2-devel-2.0.14-VC.zip" -OutFile "SDL2.zip"
-          Expand-Archive -Path SDL2.zip -DestinationPath ./dependencies/windows/
-          Rename-Item ./dependencies/windows/SDL2-2.0.14 SDL2
-      - name: Run vcpkg
+          apt update
+          apt install ninja-build
+      - name: Configure CMake
         run: |
-          vcpkg install libogg:x64-windows-static libvorbis:x64-windows-static libtheora:x64-windows-static
-          vcpkg integrate install
-      - name: Build Sonic Nexus
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake \
+            -DSDL_WERROR=ON \
+            -DSDL_TESTS=ON \
+            -DSDL_INSTALL_TESTS=ON \
+            -DSDL_VENDOR_INFO="Github Workflow" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=prefix
+      - name: Build
+        run: cmake --build build --verbose
+      - name: Install CMake
         run: |
-          msbuild Nexus.sln /p:Configuration=Release /p:Platform=x64 /p:ForceImportBeforeCppTargets="$env:GITHUB_WORKSPACE/props/winactions_x64.props"
-      - name: Move artifacts
+          echo "SDL3_DIR=$(pwd)/prefix" >> $GITHUB_ENV
+          cmake --install build/
+          ( cd prefix; find ) | LC_ALL=C sort -u
+      - name: Verify CMake configuration files
         run: |
-          mkdir artifacts
-          move ./build/x64/Release/*.dll ./artifacts 
-          move ./build/x64/Release/*.exe ./artifacts
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v1.0.0  
-        with:
-          name: Nexus-Windows-x64 
-          path: artifacts     
+          cmake -S cmake/test -B cmake_config_build -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=${DEVKITPRO}/cmake/3DS.cmake \
+            -DTEST_SHARED=FALSE \
+            -DCMAKE_PREFIX_PATH=${{ env.SDL3_DIR }} \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build cmake_config_build --verbose
+      # Not running test_pkgconfig.sh and test_sdlconfig.sh
+      # as invoking the compiler manually is not supported
