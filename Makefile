@@ -29,8 +29,7 @@ SOURCES = \
   Nexus/Text.cpp \
   Nexus/Userdata.cpp \
   Nexus/Video.cpp
-
-	  
+   
 ifeq ($(FORCE_CASE_INSENSITIVE),1)
   CXXFLAGS_ALL += -DFORCE_CASE_INSENSITIVE
   SOURCES += Nexus/fcaseopen.c
