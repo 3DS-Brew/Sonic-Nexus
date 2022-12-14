@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  n3ds:
+  Sonic Nexus 3DS Build:
     runs-on: ubuntu-latest
     container:
       image: devkitpro/devkitarm:latest
