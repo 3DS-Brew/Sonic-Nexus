@@ -19,6 +19,6 @@ jobs:
           apt install ninja-build
       - name: Download and install dependencies
         run : |
-          apt install build-essential git libsdl2-dev libvorbis-dev libogg-dev libtheora-dev      
+          apt install build-essential git libsdl2-dev libvorbis-dev libogg-dev libtheora-dev -y   
       - name: Build Sonic Nexus for the Nintendo 3DS
         run: make
