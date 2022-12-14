@@ -1,6 +1,6 @@
 name: Sonic Nexus 3DS Build
 
-on: [push, pull_request]
+on: workflow_dispatch
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.issue.number || github.run_id }}
