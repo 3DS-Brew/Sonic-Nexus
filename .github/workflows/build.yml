@@ -25,7 +25,7 @@ jobs:
       - name: Move artifacts
         run: |
           mkdir artifacts
-          mv ./build_3ds ./artifacts
+          mv ./bin/3ds ./artifacts
       - name: Upload artifacts
         uses: actions/upload-artifact@v1.0.0
         with:
