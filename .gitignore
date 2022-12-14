@@ -243,3 +243,6 @@ _Pvt_Extensions/
 ModelManifest.xml
 
 Ignored/
+
+#Object shit
+objects/
